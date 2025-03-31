@@ -11,6 +11,14 @@ pipeline{
         stage('Build'){
             steps{
                 sh 'echo "Building Application..."'
+                sh 'mkdir -p output && echo "Artifact file" > output/build.txt'
+            }
+        }
+
+        stage('Archive'){
+            steps{
+                sh 'echo "Archiving old artifacts..."'
+                archiveArtifacts artifacts: 'output/*.txt', fingerprint: true
             }
         }
 
