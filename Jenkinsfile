@@ -1,36 +1,44 @@
 pipeline{
     agent any
 
+    environment{
+        IMAGE_NAME = 'myapp'
+        IMAGE_TAG = 'latest'
+        DOCKER_USER = 'bhargavenu'
+        DOCKER_CREDS_ID = 'docker-hub-credentials'
+    }
+
     stages{
         stage('Checkout'){
             steps{
-                git branch: 'main', url: 'git@github.com:garlicmunk/jenkins-app.git'
+                checkout scm
             }
         }
 
-        stage('Build'){
+        stage('Build App'){
             steps{
-                sh 'echo "Building Application..."'
-                sh 'mkdir -p output && echo "Artifact file" > output/build.txt'
+                sh 'echo "Building App..."'
+                sh 'npm install'
             }
         }
 
-        stage('Archive'){
+        stage('Build Docker Image'){
             steps{
-                sh 'echo "Archiving old artifacts..."'
-                archiveArtifacts artifacts: 'output/*.txt', fingerprint: true
+                sh "docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
-        stage('Test'){
+        stage('Push Docker Image'){
             steps{
-                sh 'echo "Running Tests..."'
+                withDockerRegistry([credentialsId: DOCKER_CREDS_ID, url: '']){
+                    sh "docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                }
             }
         }
 
-        stage('Deploy'){
+        stage('Deploy Container'){
             steps{
-                sh 'echo "Deploying Application..."'
+                sh "docker run -d -p 3000:3000 ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
     }
