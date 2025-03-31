@@ -1,5 +1,5 @@
 {
-	"name": "jenkins-proj",
+	"name": "jenkins-app",
 	"version": "1.0.0",
 	"scripts": {
 		"start": "app.js"
